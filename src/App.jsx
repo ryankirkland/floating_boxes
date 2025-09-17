@@ -7,6 +7,7 @@ const MIN_SPEED = 60; // pixels per second
 const MAX_SPEED = 160;
 
 const getRandomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 80%, 60%)`;
+const RESET_COLOR = '#ffffff';
 const randomDirection = () => (Math.random() > 0.5 ? 1 : -1);
 
 const getInitialBounds = () => {
@@ -100,23 +101,28 @@ function App() {
       setBoxes((prev) =>
         prev.map((box) => {
           let { x, y, dx, dy, size } = box;
+          let collided = false;
           let nextX = x + dx * delta;
           let nextY = y + dy * delta;
 
           if (nextX <= 0) {
             nextX = 0;
             dx = Math.abs(dx);
+            collided = true;
           } else if (nextX + size >= width) {
             nextX = Math.max(width - size, 0);
             dx = -Math.abs(dx);
+            collided = true;
           }
 
           if (nextY <= 0) {
             nextY = 0;
             dy = Math.abs(dy);
+            collided = true;
           } else if (nextY + size >= height) {
             nextY = Math.max(height - size, 0);
             dy = -Math.abs(dy);
+            collided = true;
           }
 
           return {
@@ -125,6 +131,7 @@ function App() {
             y: nextY,
             dx,
             dy,
+            color: collided ? getRandomColor() : box.color,
           };
         })
       );
@@ -139,29 +146,16 @@ function App() {
     };
   }, []);
 
-  const handleChangeColor = () => {
-    setBoxes((prev) => {
-      if (prev.length === 0) {
-        return prev;
-      }
-      const index = Math.floor(Math.random() * prev.length);
-      return prev.map((box, i) =>
-        i === index
-          ? {
-              ...box,
-              color: getRandomColor(),
-            }
-          : box
-      );
-    });
+  const handleResetColor = () => {
+    setBoxes((prev) => prev.map((box) => ({ ...box, color: RESET_COLOR })));
   };
 
   return (
     <div className="app">
       <header className="controls">
         <h1 className="title">Floating Color Boxes</h1>
-        <button type="button" className="action" onClick={handleChangeColor}>
-          Change Color
+        <button type="button" className="action" onClick={handleResetColor}>
+          Reset Color
         </button>
       </header>
       <div ref={playgroundRef} className="playground">
